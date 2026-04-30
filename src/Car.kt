@@ -1,15 +1,5 @@
 import kotlin.math.pow
 
-interface Vehicle {
-    fun sendInfo(other: Vehicle)
-    fun receiveInfo(other_car: Vehicle)
-    fun printInfo()
-    fun getVin(): String
-
-    fun getLastEvents(lastKm: Int = 100): List<Event>
-    fun getLocation(): Location
-}
-
 class Car(
     private val manufacturer: String,
     private val model: String,
@@ -17,10 +7,10 @@ class Car(
     private var current_speed: Int,
     private var odometer: Int,
     private var location: Location,
-): Vehicle {
+): Communications {
     private var events: MutableList<Event> = mutableListOf()
     private var receivedEvents: MutableList<Event> = mutableListOf()
-    private var knownCars: MutableList<Vehicle> = mutableListOf()
+    private var knownCars: MutableList<Communications> = mutableListOf()
 
     fun setSpeed(speed: Int) {
         if (speed >= 0)
@@ -48,7 +38,7 @@ class Car(
         return location
     }
 
-    fun distanceTo(other_car: Vehicle): Double {
+    fun distanceTo(other_car: Communications): Double {
         val distance = (
                 (location.lat - other_car.getLocation().lat).pow(2) +
                         (location.long - other_car.getLocation().long).pow(2)
@@ -56,11 +46,11 @@ class Car(
         return distance
     }
 
-    override fun sendInfo(other_car: Vehicle) {
+    override fun sendInfo(other_car: Communications) {
         other_car.receiveInfo(this)
     }
 
-    override fun receiveInfo(other_car: Vehicle) {
+    override fun receiveInfo(other_car: Communications) {
         knownCars.add(other_car)
         receivedEvents.addAll(other_car.getLastEvents())
     }
@@ -76,8 +66,8 @@ class Car(
         println("-------------------------")
     }
 
-    fun pickClosestCar(): Vehicle? {
-        var closestCar: Vehicle? = null
+    fun pickClosestCar(): Communications? {
+        var closestCar: Communications? = null
         var closestDistance: Double = 100000000.0
         for (car in knownCars) {
             val distance = distanceTo(car)
